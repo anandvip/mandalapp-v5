@@ -5,13 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meditation Tracker</title>
   <style>
-    /* Your CSS styles */
+    .session-entry {
+      margin-bottom: 10px;
+    }
+
+    .session-entry h3 {
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
+
+    .session-item {
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+
+    .session-notes {
+      display: block;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      width: 100%;
+    }
+
+    .session-notes:empty:before {
+      content: "+";
+      display: block;
+      text-align: center;
+      color: #ccc;
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
       background-color: #f4f4f4;
     }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
@@ -23,15 +52,23 @@
       grid-template-columns: 1fr 3fr 1fr;
       gap: 20px;
     }
+
     @media (max-width: 768px) {
       .container {
         grid-template-columns: 1fr;
       }
     }
+
     .dashboard, .mandala-info, .session-log, .meditation-notes {
       padding: 20px;
       background-color: #f9f9f9;
       border-radius: 5px;
+      
+    }
+    .dashboard{
+      height:fit-content;
+      background-color: #070707;
+      color:  #f9f9f9
     }
     .progress-bar {
       width: 100%;
@@ -40,12 +77,34 @@
       border-radius: 10px;
       overflow: hidden;
     }
+
     #progressBar {
       height: 100%;
       background-color: #4CAF50;
       width: 0%;
       transition: width 0.5s ease;
     }
+
+    .session-entry {
+      padding: 10px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .session-notes {
+      outline: none;
+      border: 1px solid transparent;
+      padding: 5px;
+      width: 100%;
+    }
+
+    .session-notes:hover {
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
     .meditation-notes {
       background-color: #333;
       color: #fff;
@@ -54,9 +113,11 @@
       position: relative;
       height: fit-content;
     }
+
     .meditation-notes h2 {
       color: #fff;
     }
+
     .export-notes-btn {
       background-color: #4CAF50;
       color: white;
@@ -69,22 +130,26 @@
       bottom: 30px;
       right: 10px;
     }
+
     .note-card {
       padding: 10px;
       margin: 10px;
-      background-color: #f9f9f9;
+      background-color: #070707;
       border-radius: 5px;
     }
+
     .note-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 10px;
     }
+
     @media (max-width: 768px) {
       .note-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
     .footer {
       margin-top: 20px;
       padding: 20px;
@@ -95,6 +160,7 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
+
     @media (max-width: 768px) {
       .footer {
         grid-template-columns: repeat(2, 1fr);
@@ -106,391 +172,441 @@
 <body>
   <div class="container">
     <div class="dashboard">
-      <h2>Dashboard</h2>
+      <h2>Mandal Dashboard</h2>
       <p>Today Date & Time: <span id="currentDateTime"></span></p>
-      <p>Your Name: <span id="userName" contenteditable="true" onblur="saveUserName(event)">Vipul</span></p>
-      <p>Mandal Name: <span id="mandalName" contenteditable="true" onblur="saveMandalName(event)">Bring Awareness to chit</span> <span class="info">ⓘ</span></p>
-      <p>Duration: <span id="duration">48 days</span></p>
-      <p>Start Date: <input type="date" id="startDateInput" onchange="saveStartDate(event)" /></p>
-      <p>End Date: <span id="endDate"></span></p>
-      <p>Days Completed: <span id="daysCompleted">8</span></p>
-      <p>Remaining Days: <span id="remainingDays">40</span></p>
-      <p>Sessions Completed: <span id="sessionsCompleted">20 / 96</span></p>
-      <p>Mandal Completed: <span id="mandalsCompleted" contenteditable="true" onblur="saveMandalsCompleted(event)">5</span></p>
+      <p>Your Name: <span id="userName" contenteditable="true" onblur="saveUserName(event)">Vipul Anand</span></p>
+      <p>Mandal Name: <span id="mandalaNameDashboard" contenteditable="true" onblur="saveMandalaName(event)">Bring Awareness to chit</span></p>
+      <p>Duration: 48 days</p>
+      <p>Start Date: <input type="date" id="startDateInput" onchange="setStartDate(event)"></p>
+      <p>End Date: <span id="endDateDashboard"></span></p>
+      <p>Days Completed: <span id="daysCompleted"></span></p>
+      <p>Remaining Days: <span id="remainingDays"></span></p>
+      <p>Sessions Completed: <span id="sessionsCompletedDashboard"></span> / 96</p>
+      <p>Mandal Completed: <span id="mandalsCompleted" contenteditable="true" onblur="saveMandalsCompleted(event)">0</span></p>
       <button onclick="createSession()">Create Session</button>
       <button onclick="deleteMandal()">Delete Mandal</button>
     </div>
     <div>
       <h1>Meditation Tracker</h1>
       <div class="mandala-info">
-        <h2 id="mandalaNameHeader"></h2>
-        <p>Observer: <span id="observerName"></span></p>
+        <h2 id="mandalaName"></h2>
+        <p>Observer: <span id="observerName" contenteditable="true" onblur="saveObserverName(event)">Vipul Anand</span></p>
         <p>Start Date: <span id="startDate"></span></p>
-        <p>End Date: <span id="endDateHeader"></span></p>
-        <p>Sessions Completed: <span id="sessionsCompletedHeader"></span> / <span id="totalSessions"></span></p>
+        <p>End Date: <span id="endDate"></span></p>
+        <p>Sessions Completed: <span id="sessionsCompleted"></span> / <span id="totalSessions"></span></p>
         <div class="progress-bar">
           <div id="progressBar"></div>
         </div>
       </div>
+      
       <div class="session-log">
         <h2>Your Meditation History</h2>
+        <p>Here, you can view your past meditation sessions. It's a record of your journey & commitment towards mindfulness.</p>
         <div id="sessionLog"></div>
       </div>
     </div>
+
     <div class="meditation-notes">
       <h2>Meditation Notes</h2>
       <div id="notesSection"></div>
       <button class="export-notes-btn" onclick="exportNotes()">Export Notes</button>
     </div>
   </div>
+
   <script>
-    const masterKey = 'mandalProgressLatest';
-
-    function getMasterObject() {
-      const storedMasterObject = localStorage.getItem(masterKey);
-      return storedMasterObject ? JSON.parse(storedMasterObject) : null;
+    let observerName = 'Vipul Anand'; // Initial value for the observer name
+    const storedMandalas = localStorage.getItem("mandalas");
+    let mandalas = [];
+    if (storedMandalas) {
+      mandalas = JSON.parse(storedMandalas);
     }
 
-    function saveMasterObject(masterObject) {
-      localStorage.setItem(masterKey, JSON.stringify(masterObject));
+    // Utility function to format date
+    function formatDate(date) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      return new Date(date).toLocaleDateString('en-GB', options);
     }
+
+    // Function to set current date and time
+    function setCurrentDateTime() {
+      const currentDateTime = new Date().toLocaleString();
+      document.getElementById("currentDateTime").textContent = currentDateTime;
+    }
+
+    setCurrentDateTime();
+    setInterval(setCurrentDateTime, 1000);
 
     function saveUserName(event) {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        masterObject.userName = event.target.textContent.trim();
-        saveMasterObject(masterObject);
-        updateDashboard();
-      }
+      const userName = event.target.textContent.trim();
+      localStorage.setItem("userName", userName);
+      console.log(`User Name Saved: ${userName}`);
     }
 
-    function saveMandalName(event) {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        masterObject.mandalName = event.target.textContent.trim();
-        saveMasterObject(masterObject);
-        updateDashboard();
-      }
+    function saveObserverName(event) {
+      observerName = event.target.textContent.trim();
+      console.log(`Observer Name Saved: ${observerName}`);
+      updateMandalaInfo(); // Refresh the UI with the updated observer name
     }
 
-    function saveStartDate(event) {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        masterObject.startDate = event.target.value;
-        const endDate = new Date(event.target.value);
-        endDate.setDate(endDate.getDate() + masterObject.duration);
-        masterObject.endDate = endDate.toDateString();
-        saveMasterObject(masterObject);
-        updateDashboard();
-      }
+    function saveMandalaName(event) {
+      const mandalaName = event.target.textContent.trim();
+      const currentMandala = mandalas[0];
+      currentMandala.name = mandalaName;
+      localStorage.setItem("mandalas", JSON.stringify(mandalas));
+      document.getElementById("mandalaName").textContent = mandalaName;
+      console.log(`Mandala Name Saved: ${mandalaName}`);
+    }
+
+    function setStartDate(event) {
+      const startDate = event.target.value;
+      const currentMandala = mandalas[0];
+      currentMandala.startDate = startDate;
+      currentMandala.endDate = calculateEndDate(startDate, 48); // 48 days duration
+      localStorage.setItem("mandalas", JSON.stringify(mandalas));
+      updateMandalaInfo();
+      console.log(`Start Date Set: ${startDate}`);
+    }
+
+    function calculateEndDate(startDate, duration) {
+      const start = new Date(startDate);
+      start.setDate(start.getDate() + duration);
+      return formatDate(start);
     }
 
     function saveMandalsCompleted(event) {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        masterObject.mandalsCompleted = parseInt(event.target.textContent.trim());
-        saveMasterObject(masterObject);
-        updateDashboard();
+      const mandalsCompleted = event.target.textContent.trim();
+      localStorage.setItem("mandalsCompleted", mandalsCompleted);
+      console.log(`Mandals Completed Saved: ${mandalsCompleted}`);
+    }
+
+    function updateMandalaInfo() {
+      console.log("Function: updateMandalaInfo called");
+      const currentMandala = mandalas[0];
+      document.getElementById("mandalaName").textContent = currentMandala.name;
+      document.getElementById("mandalaNameDashboard").textContent = currentMandala.name;
+      document.getElementById("observerName").textContent = observerName;
+      document.getElementById("startDate").textContent = formatDate(currentMandala.startDate);
+      document.getElementById("startDateInput").value = currentMandala.startDate;
+      document.getElementById("endDate").textContent = formatDate(currentMandala.endDate);
+      document.getElementById("endDateDashboard").textContent = formatDate(currentMandala.endDate);
+      document.getElementById("sessionsCompleted").textContent = currentMandala.sessions.filter(session => session.completed).length;
+      document.getElementById("sessionsCompletedDashboard").textContent = currentMandala.sessions.filter(session => session.completed).length;
+      document.getElementById("totalSessions").textContent = currentMandala.totalSessions;
+
+      const progress = (currentMandala.sessions.filter(session => session.completed).length / currentMandala.totalSessions) * 100;
+      document.getElementById("progressBar").style.width = `${progress}%`;
+
+      const daysCompleted = Math.floor((new Date() - new Date(currentMandala.startDate)) / (1000 * 60 * 60 * 24));
+      document.getElementById("daysCompleted").textContent = daysCompleted;
+      const remainingDays = 48 - daysCompleted;
+      document.getElementById("remainingDays").textContent = remainingDays;
+
+      const userName = localStorage.getItem("userName") || "Vipul Anand";
+      document.getElementById("userName").textContent = userName;
+      const mandalsCompleted = localStorage.getItem("mandalsCompleted") || "0";
+      document.getElementById("mandalsCompleted").textContent = mandalsCompleted;
+    }
+
+    function displaySessionLog() {
+      console.log("Function: displaySessionLog called");
+      const currentMandala = mandalas[0];
+      const sessionLogElement = document.getElementById("sessionLog");
+      sessionLogElement.innerHTML = ""; // Clear previous content to avoid duplication
+
+      let day = 1;
+      for (let i = 0; i < currentMandala.sessions.length; i += 2) {
+        const sessionEntry = document.createElement("div");
+        sessionEntry.classList.add("session-entry");
+
+        const dateHeader = document.createElement("h3");
+        dateHeader.textContent = `Day ${day} (${currentMandala.sessions[i].date})`;
+        sessionEntry.appendChild(dateHeader);
+
+        const morningSessionTime = document.createElement("div");
+        morningSessionTime.classList.add("session-item");
+        morningSessionTime.innerHTML = `<strong>Morning</strong>: ${currentMandala.sessions[i].startTime} - ${currentMandala.sessions[i].endTime}`;
+        sessionEntry.appendChild(morningSessionTime);
+
+        const morningSessionCompleted = document.createElement("div");
+        morningSessionCompleted.classList.add("session-item");
+        morningSessionCompleted.textContent = `Completed: ${currentMandala.sessions[i].completed ? "Yes" : "No"}`;
+        sessionEntry.appendChild(morningSessionCompleted);
+
+        const morningSessionNotes = document.createElement("span");
+        morningSessionNotes.classList.add("session-notes");
+        morningSessionNotes.contentEditable = "true";
+        morningSessionNotes.dataset.index = i;
+        morningSessionNotes.textContent = currentMandala.sessions[i].notes || "";
+        morningSessionNotes.setAttribute("onblur", "saveSessionNotes(event)");
+        sessionEntry.appendChild(morningSessionNotes);
+
+        console.log(`Function: displaySessionLog -> Added Morning Session: Day ${day}, Notes: ${morningSessionNotes.textContent}`);
+
+        if (currentMandala.sessions[i + 1]) {
+          const eveningSessionTime = document.createElement("div");
+          eveningSessionTime.classList.add("session-item");
+          eveningSessionTime.innerHTML = `<b>Evening</b>: ${currentMandala.sessions[i + 1].startTime} - ${currentMandala.sessions[i + 1].endTime}`;
+          sessionEntry.appendChild(eveningSessionTime);
+
+          const eveningSessionCompleted = document.createElement("div");
+          eveningSessionCompleted.classList.add("session-item");
+          eveningSessionCompleted.textContent = `Completed: ${currentMandala.sessions[i + 1].completed ? "Yes" : "No"}`;
+          sessionEntry.appendChild(eveningSessionCompleted);
+
+          const eveningSessionNotes = document.createElement("span");
+          eveningSessionNotes.classList.add("session-notes");
+          eveningSessionNotes.contentEditable = "true";
+          eveningSessionNotes.dataset.index = i + 1;
+          eveningSessionNotes.textContent = currentMandala.sessions[i + 1].notes || "";
+          eveningSessionNotes.setAttribute("onblur", "saveSessionNotes(event)");
+          sessionEntry.appendChild(eveningSessionNotes);
+
+          console.log(`Function: displaySessionLog -> Added Evening Session: Day ${day}, Notes: ${eveningSessionNotes.textContent}`);
+        }
+
+        sessionLogElement.appendChild(sessionEntry);
+        day++;
       }
-    }
-
-    function updateDashboard() {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        document.getElementById('currentDateTime').textContent = new Date().toLocaleString();
-        document.getElementById('userName').textContent = masterObject.userName;
-        document.getElementById('mandalName').textContent = masterObject.mandalName;
-        document.getElementById('mandalNameHeader').textContent = masterObject.mandalName;
-        document.getElementById('observerName').textContent = masterObject.userName;
-        document.getElementById('startDate').textContent = masterObject.startDate;
-        document.getElementById('endDate').textContent = masterObject.endDate;
-        document.getElementById('endDateHeader').textContent = masterObject.endDate;
-        document.getElementById('daysCompleted').textContent = masterObject.daysCompleted;
-        document.getElementById('remainingDays').textContent = masterObject.duration - masterObject.daysCompleted;
-        document.getElementById('sessionsCompleted').textContent = masterObject.sessionsCompleted + ' / ' + masterObject.totalSessions;
-        document.getElementById('mandalsCompleted').textContent = masterObject.mandalsCompleted;
-        document.getElementById('sessionsCompletedHeader').textContent = masterObject.sessionsCompleted;
-        document.getElementById('totalSessions').textContent = masterObject.totalSessions;
-
-        const progress = (masterObject.sessionsCompleted / masterObject.totalSessions) * 100;
-        document.getElementById('progressBar').style.width = `${progress}%`;
-      }
-    }
-
-    function createSession() {
-      // Logic for creating a session
-    }
-
-    function deleteMandal() {
-      localStorage.removeItem(masterKey);
-      location.reload();
     }
 
     function saveSessionNotes(event) {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        const index = event.target.dataset.index;
-        const newNotes = event.target.textContent.trim();
+      console.log("Function: saveSessionNotes called");
+      const currentMandala = mandalas[0];
+      const index = event.target.dataset.index;
+      const newNotes = event.target.textContent.trim();
 
-        masterObject.sessions[index].notes = newNotes;
-        saveMasterObject(masterObject);
-        updateMeditationNotes();
-      }
+      currentMandala.sessions[index].notes = newNotes;
+      localStorage.setItem("mandalas", JSON.stringify(mandalas));
+      console.log(`Function: saveSessionNotes -> Saved Notes: ${newNotes} for Session Index: ${index}`);
+      updateMeditationNotes();
     }
 
     function updateMeditationNotes() {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        const notesSectionElement = document.getElementById('notesSection');
-        notesSectionElement.innerHTML = '';
+      console.log("Function: updateMeditationNotes called");
+      const currentMandala = mandalas[0];
+      const notesSectionElement = document.getElementById("notesSection");
+      notesSectionElement.innerHTML = ""; // Clear previous content to avoid duplication
 
-        let day = 1;
-        for (let i = 0; i < masterObject.sessions.length; i += 2) {
-          const morningSession = masterObject.sessions[i];
-          const eveningSession = masterObject.sessions[i + 1];
+      let day = 1;
+      for (let i = 0; i < currentMandala.sessions.length; i += 2) {
+        const morningSession = currentMandala.sessions[i];
+        const eveningSession = currentMandala.sessions[i + 1];
 
-          if (morningSession && morningSession.notes) {
-            const morningNoteCard = document.createElement('div');
-            morningNoteCard.classList.add('note-card');
+        const morningNoteCard = document.createElement("div");
+        morningNoteCard.classList.add("note-card");
 
-            const morningNoteContent = document.createElement('p');
-            morningNoteContent.innerHTML = `Day ${day} Morning (${morningSession.date}): ${morningSession.notes}`;
-            morningNoteContent.setAttribute('contenteditable', 'true');
-            morningNoteContent.dataset.index = i;
-            morningNoteContent.setAttribute('onblur', 'saveSessionNotes(event)');
-            morningNoteCard.appendChild(morningNoteContent);
+        const morningNoteContent = document.createElement("p");
+        morningNoteContent.innerHTML = `Day ${day} Morning (${morningSession.date}): ${morningSession.notes || ""}`;
+        morningNoteContent.setAttribute("contenteditable", "true");
+        morningNoteContent.dataset.index = i;
+        morningNoteContent.setAttribute("onblur", "saveSessionNotes(event)");
+        morningNoteCard.appendChild(morningNoteContent);
 
-            notesSectionElement.appendChild(morningNoteCard);
-          }
+        notesSectionElement.appendChild(morningNoteCard);
+        console.log(`Function: updateMeditationNotes -> Displayed Morning Note: Day ${day}, Notes: ${morningNoteContent.textContent}`);
 
-          if (eveningSession && eveningSession.notes) {
-            const eveningNoteCard = document.createElement('div');
-            eveningNoteCard.classList.add('note-card');
+        if (eveningSession) {
+          const eveningNoteCard = document.createElement("div");
+          eveningNoteCard.classList.add("note-card");
 
-            const eveningNoteContent = document.createElement('p');
-            eveningNoteContent.innerHTML = `Day ${day} Evening (${eveningSession.date}): ${eveningSession.notes}`;
-            eveningNoteContent.setAttribute('contenteditable', 'true');
-            eveningNoteContent.dataset.index = i + 1;
-            eveningNoteContent.setAttribute('onblur', 'saveSessionNotes(event)');
-            eveningNoteCard.appendChild(eveningNoteContent);
+          const eveningNoteContent = document.createElement("p");
+          eveningNoteContent.innerHTML = `Day ${day} Evening (${eveningSession.date}): ${eveningSession.notes || ""}`;
+          eveningNoteContent.setAttribute("contenteditable", "true");
+          eveningNoteContent.dataset.index = i + 1;
+          eveningNoteContent.setAttribute("onblur", "saveSessionNotes(event)");
+          eveningNoteCard.appendChild(eveningNoteContent);
 
-            notesSectionElement.appendChild(eveningNoteCard);
-          }
-
-          day++;
+          notesSectionElement.appendChild(eveningNoteCard);
+          console.log(`Function: updateMeditationNotes -> Displayed Evening Note: Day ${day}, Notes: ${eveningNoteContent.textContent}`);
         }
+
+        day++;
       }
     }
 
     function exportNotes() {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        let exportHTML = `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Meditation Notes Export</title>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f4f4f4;
-              }
-              .container {
-                max-width: 1000px;
-                margin: 0 auto;
-                background-color: #fff;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-              }
-              .header {
-                position: relative;
-                margin-bottom: 20px;
-                text-align: center;
-                background-image: url('https://github.com/anandvip/kali-yuga/blob/main/thoughts.png?raw=true');
-                background-size: cover;
-                background-position: center;
-                width: 100%;
-                height: 500px;
-                border-radius: 20px;
-                overflow: hidden;
-              }
-              .header h1 {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: white;
-                font-size: 2.5em;
-                margin: 0;
-              }
-              .note-card {
-                padding: 10px;
-                margin: 10px;
-                background-color: #f9f9f9;
-                border-radius: 5px;
-              }
+      console.log("Function: exportNotes called");
+      const currentMandala = mandalas[0];
+      let exportHTML = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Meditation Notes Export</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              background-color: #f4f4f4;
+            }
+            .container {
+              max-width: 1000px;
+              margin: 0 auto;
+              background-color: #fff;
+              padding: 20px;
+              border-radius: 5px;
+              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              position: relative;
+              margin-bottom: 20px;
+              text-align: center;
+              background-image: url('https://github.com/anandvip/kali-yuga/blob/main/thoughts.png?raw=true');
+              background-size: cover;
+              background-position: center;
+              width: 100%;
+              height: 500px;
+              border-radius: 20px;
+              overflow: hidden;
+            }
+            .header h1 {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              color: white;
+              font-size: 2.5em;
+              margin: 0;
+            }
+            .note-card {
+              padding: 10px;
+              margin: 10px;
+              background-color: #f9f9f9;
+              border-radius: 5px;
+            }
+            .note-grid {
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              gap: 10px;
+            }
+            .footer {
+              margin-top: 20px;
+              padding: 20px;
+              background-color: #f9f9f9;
+              border-radius: 5px;
+              text-align: center;
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 10px;
+            }
+            @media (max-width: 768px) {
               .note-grid {
-                display: grid;
-                grid-template-columns: repeat(5, 1fr);
-                gap: 10px;
+                grid-template-columns: repeat(2, 1fr);
               }
               .footer {
-                margin-top: 20px;
-                padding: 20px;
-                background-color: #f9f9f9;
-                border-radius: 5px;
-                text-align: center;
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
+                grid-template-columns: repeat(2, 1fr);
               }
-              @media (max-width: 768px) {
-                .note-grid {
-                  grid-template-columns: repeat(2, 1fr);
-                }
-                .footer {
-                  grid-template-columns: repeat(2, 1fr);
-                }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>${masterObject.mandalName}</h1>
-              </div>
-              <div class="note-grid">`;
-
-        masterObject.sessions.forEach((session, index) => {
-          if (session.notes && session.notes.trim() !== "") {
-            exportHTML += `
-              <div class="note-card">
-                <p>Day ${Math.floor(index / 2) + 1} ${index % 2 === 0 ? 'Morning' : 'Evening'} (${session.date}): ${session.notes}</p>
-                <p>Date: ${session.date} | Time: ${session.startTime} - ${session.endTime}</p>
-                <p>Observer: ${masterObject.userName}</p>
-              </div>`;
-          }
-        });
-
-        exportHTML += `
-              </div>
-              <div class="footer">
-                <p>Duration: ${masterObject.startDate} to ${masterObject.endDate}</p>
-                <p>Exported on: ${new Date().toLocaleDateString()}</p>
-                <p>Observations captured by: ${masterObject.userName}</p>
-              </div>
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${currentMandala.name}</h1>
             </div>
-          </body>
-        </html>`;
+            <div class="note-grid">`;
 
-        const blob = new Blob([exportHTML], { type: 'text/html' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'meditation_notes.html';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-                document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    }
-
-    function checkForExistingMandal() {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        const endDate = new Date(masterObject.endDate);
-        const currentDate = new Date();
-        if (endDate < currentDate) {
-          // Show intrusive toast
-          const toast = document.createElement('div');
-          toast.style.position = 'fixed';
-          toast.style.top = '50%';
-          toast.style.left = '50%';
-          toast.style.transform = 'translate(-50%, -50%)';
-          toast.style.backgroundColor = 'black';
-          toast.style.color = 'aqua';
-          toast.style.padding = '20px';
-          toast.style.borderRadius = '5px';
-          toast.style.zIndex = '1000';
-          toast.innerHTML = `
-            <p>The existing Mandal has ended. Do you want to mark it as complete?</p>
-            <button onclick="markMandalComplete()">Yes</button>
-            <button onclick="closeToast()">Cancel</button>
-          `;
-          document.body.appendChild(toast);
+      currentMandala.sessions.forEach((session, index) => {
+        if (session.notes && session.notes.trim() !== "") {
+          exportHTML += `
+            <div class="note-card">
+              <p>Day ${Math.floor(index / 2) + 1} ${index % 2 === 0 ? 'Morning' : 'Evening'} (${session.date}): ${session.notes || ""}</p>
+              <p>Date: ${session.date} | Time: ${session.startTime} - ${session.endTime}</p>
+              <p>Observer: ${observerName}</p>
+            </div>`;
         }
+      });
+
+      exportHTML += `
+            </div>
+            <div class="footer">
+              <p>Duration: ${currentMandala.startDate} to ${currentMandala.endDate}</p>
+              <p>Exported on: ${new Date().toLocaleDateString()}</p>
+              <p>Observations captured by: ${observerName}</p>
+            </div>
+          </div>
+        </body>
+      </html>`;
+
+      const exportBlob = new Blob([exportHTML], { type: 'text/html' });
+      const exportUrl = URL.createObjectURL(exportBlob);
+      const a = document.createElement('a');
+      a.href = exportUrl;
+      a.download = `${currentMandala.name}_notes.html`;
+      a.click();
+      URL.revokeObjectURL(exportUrl);
+    }
+
+    function createSession() {
+      // Implement create session functionality here
+    }
+
+    function deleteMandal() {
+      // Implement delete mandal functionality here
+    }
+
+    function checkExistingMandala() {
+      const currentMandala = mandalas[0];
+      if (currentMandala && new Date(currentMandala.endDate) < new Date()) {
+        showToast("The current mandala has ended. Would you like to mark it as complete?", "yesNo");
       }
     }
 
-    function markMandalComplete() {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        let completedMandals = localStorage.getItem('completedMandals');
-        completedMandals = completedMandals ? JSON.parse(completedMandals) : [];
-        completedMandals.push(masterObject);
-        localStorage.setItem('completedMandals', JSON.stringify(completedMandals));
-        localStorage.removeItem(masterKey);
-        location.reload();
+    function showToast(message, type = "info") {
+      const toast = document.createElement("div");
+      toast.classList.add("toast");
+      toast.textContent = message;
+      if (type === "yesNo") {
+        const yesBtn = document.createElement("button");
+        yesBtn.textContent = "Yes";
+        yesBtn.onclick = () => {
+          moveMandalaToCompleted();
+          document.body.removeChild(toast);
+        };
+        const noBtn = document.createElement("button");
+        noBtn.textContent = "Cancel";
+        noBtn.onclick = () => document.body.removeChild(toast);
+        toast.appendChild(yesBtn);
+        toast.appendChild(noBtn);
+      } else {
+        setTimeout(() => document.body.removeChild(toast), 3000);
       }
+      document.body.appendChild(toast);
     }
 
-    function closeToast() {
-      const toast = document.querySelector('div[style*="position: fixed"]');
-      if (toast) {
-        toast.remove();
-      }
+    function moveMandalaToCompleted() {
+      const currentMandala = mandalas.shift();
+      let completedMandalas = localStorage.getItem("completedMandalas");
+      completedMandalas = completedMandalas ? JSON.parse(completedMandalas) : [];
+      completedMandalas.push(currentMandala);
+      localStorage.setItem("completedMandalas", JSON.stringify(completedMandalas));
+      localStorage.setItem("mandalas", JSON.stringify(mandalas));
+      updateMandalaInfo();
+      displaySessionLog();
+      updateMeditationNotes();
+      showToast("Mandala marked as completed and moved to history.", "info");
     }
 
-    // Initial setup
-    document.addEventListener('DOMContentLoaded', () => {
-      checkForExistingMandal();
-      updateDashboard();
+    document.addEventListener("DOMContentLoaded", () => {
+      if (mandalas.length === 0) {
+        // Initialize a new mandala if none exists
+        const newMandala = {
+          name: "Bring Awareness to chit",
+          startDate: formatDate(new Date()),
+          endDate: calculateEndDate(new Date(), 48),
+          sessions: [],
+          totalSessions: 96
+        };
+        mandalas.push(newMandala);
+        localStorage.setItem("mandalas", JSON.stringify(mandalas));
+      }
+      checkExistingMandala();
+      updateMandalaInfo();
       displaySessionLog();
       updateMeditationNotes();
     });
-
-    // Function to create session
-    function createSession() {
-      const masterObject = getMasterObject();
-      if (masterObject) {
-        if (!masterObject.sessions) {
-          masterObject.sessions = [];
-        }
-        const currentDate = new Date();
-        const session = {
-          date: currentDate.toDateString(),
-          startTime: `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`,
-          endTime: '',
-          completed: false,
-          notes: ''
-        };
-        masterObject.sessions.push(session);
-        saveMasterObject(masterObject);
-        displaySessionLog();
-        updateMeditationNotes();
-      }
-    }
-
-    // Function to end session
-    function endSession(index) {
-      const masterObject = getMasterObject();
-      if (masterObject && masterObject.sessions[index]) {
-        const currentDate = new Date();
-        masterObject.sessions[index].endTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
-        masterObject.sessions[index].completed = true;
-        saveMasterObject(masterObject);
-        displaySessionLog();
-        updateMeditationNotes();
-      }
-    }
   </script>
 </body>
 </html>
-
-     
